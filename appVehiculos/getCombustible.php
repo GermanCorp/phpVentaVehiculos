@@ -4,11 +4,11 @@ include ("conexion.php");
 $json = array();
 		$con  = conectar();
 
-		$consulta = "SELECT idMarca as id, descripcionMarca as descripcion FROM marca";
+		$consulta = "SELECT * FROM combustible";
 		$resultado = mysqli_query($con,$consulta);
 
 		while ($registro = mysqli_fetch_array($resultado)) {
-			$json['datos'][] = $registro;
+			$json['combustible'][] = $registro;
 		}
 
 		mysqli_close($con);

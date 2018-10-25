@@ -2,18 +2,27 @@
 include ("conexion.php");
 
 $json = array();
-		$con  = conectar();
-		$marca;
+	if(isset($_POST["id"])){
+		$id= $_POST["id"];
 
-		$consulta = $con->prepare("select * from modelo WHERE idmarca = (?)");
-		$consulta->bind_param($marca);
-		$consulta->execute();
-		$resultado = mysqli_query($con,$consulta);
+		$conexion = conectar();
+        if ($conexion->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
 
-		while ($registro = mysqli_fetch_array($resultado)) {
-			$json['modelos'][] = $registro;
-		}
+		$stmt = $conexion->prepare("SELECT mo.idModelo, mo.idMarca, mo.descripcionModelo, ma.descripcionMarca FROM modelo AS mo INNER JOIN marca AS ma ON mo.idMarca = ma.idMarca WHERE ma.idMarca = ?");
+		$stmt->bind_param("i",$id);
+		$stmt->execute();
+		$resultado = $stmt->get_result();
 
-		mysqli_close($con);
+            while($row = mysqli_fetch_array($resultado)) {
+                $json['modelo'][] = $row;
+            }
+
+        mysqli_close($conexion);
 		echo json_encode($json);
+	}
+	else{
+		echo "Error, es necesaria una marca";
+	}
 ?>
