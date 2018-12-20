@@ -5,7 +5,6 @@
 		$server = "localhost";
 		$db = "ventaVehiculos";
 		$con = mysqli_connect($server,$user,$pass,$db);
-
 		return $con;
 	}
 ?>

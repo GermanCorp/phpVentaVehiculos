@@ -1,62 +1,69 @@
 <?PHP
-$hostname_localhost="localhost";
-$database_localhost="ventaVehiculos";
-$username_localhost="root";
-$password_localhost="";
+include ("conexion.php");
 
-$json=array();
-
- if(isset($_GET["nombres"]) && isset($_GET["apellidos"]) && isset($_GET["nombreUsuario"])
-    &&isset($_GET["pasword"]) && isset($_GET["celular"]) && isset($_GET["telefono"]) &&
-    isset($_GET["email"])){
-  $nombres=$_GET['nombres'];
-  $apellidos=$_GET['apellidos'];
-  $nombreUsuario=$_GET['nombreUsuario'];
-  $pasword=$_GET['pasword'];
-  $celular=$_GET['celular'];
-  $telefono=$_GET['telefono'];
-  $email=$_GET['email'];
+$conexion = conectar();
+//$ultimoId = 0;
 
 
-  $conexion = new mysqli($hostname_localhost, $username_localhost, $password_localhost, $database_localhost);
+
+  $nombres=$_POST["nombres"];
+  $apellidos=$_POST["apellidos"];
+  $telefono=$_POST["telefono"];
+  $celular=$_POST["celular"];
+  $email=$_POST["email"];
+  $nombreUsuario=$_POST["nombreUsuario"];
+  $contrasena=$_POST["contrasena"];
+  $direccion =$_POST["direccion"];
+  $imagen =$_POST["imagen"];
 
  
-  $insert="INSERT INTO usuarios(nombres, apellidos, nombreUsuario, pasword, celular, telefono, email) VALUES ('{$nombres}','{$apellidos}','{$nombreUsuario}',
-    '{$pasword}','{ $celular}','{$telefono}','{$email}')";
-  $resultado_insert = mysqli_query($conexion,$insert);
-  
+
+  $sql = "INSERT INTO usuarios(nombres,apellidos,nombreUsuario,pasword,celular,telefono,email,fechaRegistro,direccion) VALUES(?,?,?,?,?,?,?,NOW(),?)";
+  $stm = $conexion->prepare($sql);
+  $stm->bind_param("ssssssss",  $nombres,$apellidos,$nombreUsuario, $contrasena,$celular, $telefono , $email ,$direccion);
  
-  if($resultado_insert ){
-    $consulta = "SELECT * FROM usuarios WHERE nombres = '{$nombres}'";
-    $resultado =mysqli_query($conexion,$consulta);
-   
-  
-   if($registro=mysqli_fetch_array($resultado)){
-    $json['usuarios'][]=$registro;
+if($stm->execute()){
+      echo "registra";
+
+}else{
+     echo " no registra";
    }
-   mysqli_close($conexion);
-   echo json_encode($json);
-   
-  }else{
-   $resulta["nombres"]="NO registra";
-   $resulta["apellidos"]="NO registra";
-   $resulta["nombreUsuario"]="NO registra";
-   $resulta["pasword"]="NO registra";
-   $resulta["celular"]="NO registra";
-   $resulta["telefono"]="NO registra";
-   $resulta["email"]="NO registra";
-   $json['usuarios'][]=$resulta;
-   echo json_encode($json);
-  }
- }else{
-  $resulta["nombres"]="WS NO retorna";
-  $resulta["apellidos"]="WS NO retorna";
-  $resulta["nombreUsuario"]="WS NO retorna";
-  $resulta["pasword"]="WS NO retorna";
-  $resulta["celular"]="WS NO retorna";
-  $resulta["telefono"]="WS NO retorna";
-  $resulta["email"]="WS NO retorna";
-  $json['usuario'][]=$resulta;
-  echo json_encode($json);
- }
+
+
+ $st = $conexion->prepare("SELECT idUsuarios FROM usuarios ORDER BY idUsuarios DESC LIMIT 1");
+     $st->execute();
+    $resultado = $st->get_result();
+           if($row = mysqli_fetch_row($resultado)) {
+                $ultimoId= trim($row[0]);
+            }
+
+
+ /* $dir='imagenes/$ultimoId.jpg'; //ubicación en el host (EJ, /imagenes/foto.jpg) 
+if(file_exists($dir)) //verifica que el archivo existe 
+ {  
+ if(unlink($dir)) // si es true, llama la función 
+//echo "El archivo fue borrado";  
+ }  
+else */
+  $path = "imagenes/$ultimoId.jpg";
+  $url = "http://192.168.43.74:9001/appVehiculos/$path";
+  file_put_contents($path, base64_decode($imagen));
+  $bytesArchivo = file_get_contents($path);
+
+//UPDATE usuarios SET fotoPerfil = 'imagenes/ultimoId.jpg' WHERE idUsuarios = 50
+$stms = $conexion->prepare("Update usuarios Set fotoPerfil ='".$path."' Where idUsuarios ='".$ultimoId."'");
+    $stms->execute();
+
+
+ if($stms->execute()){
+      echo "registra";
+
+}else{
+     echo " no registra";
+   }   
+         
+
+//mysql_close($conexion);
+ 
+ 
 ?>﻿
